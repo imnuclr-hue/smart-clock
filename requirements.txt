@@ -1,0 +1,4 @@
+flask>=2.3
+requests>=2.31
+adafruit-circuitpython-bme280>=2.6
+adafruit-circuitpython-bh1750>=1.1

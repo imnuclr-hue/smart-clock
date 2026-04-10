@@ -49,7 +49,7 @@ def read_bme280():
         import board, busio
         import adafruit_bme280.basic as adafruit_bme280
         i2c = busio.I2C(board.SCL, board.SDA)
-        bme = adafruit_bme280.Adafruit_BME280_I2C(i2c)
+        bme = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x76)
         return {
             "temperature": round(bme.temperature, 1),
             "humidity":    round(bme.humidity, 1),
@@ -65,7 +65,7 @@ def read_bh1750():
         import board, busio
         import adafruit_bh1750
         i2c = busio.I2C(board.SCL, board.SDA)
-        sensor = adafruit_bh1750.BH1750(i2c)
+        sensor = adafruit_bh1750.BH1750(i2c, address=0x23)
         return {"light": round(sensor.lux, 1)}
     except Exception as e:
         return {"light_error": f"BH1750: {e}"}

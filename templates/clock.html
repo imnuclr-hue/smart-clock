@@ -5,372 +5,696 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Pi Clock</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@200;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@200;400&family=DM+Sans:wght@200;300;400&family=DM+Serif+Display&family=Roboto+Condensed:wght@700&display=swap" rel="stylesheet">
+
 <style>
-  :root {
-    --bg:        #0a0e14;
-    --panel:     #0f1520;
-    --border:    #1a2535;
-    --accent:    #00d4ff;
-    --accent2:   #ff6b35;
-    --accent3:   #39ff6e;
-    --text:      #cdd9e8;
-    --dim:       #4a6080;
-    --glow:      rgba(0, 212, 255, 0.15);
-    --glow2:     rgba(0, 212, 255, 0.04);
-  }
+/* ═══════════════════════════════════════════════════════
+   THEME VARIABLES
+═══════════════════════════════════════════════════════ */
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body.theme-cyber {
+  --bg:        #0a0e14;
+  --panel:     #0f1520;
+  --border:    #1a2535;
+  --accent:    #00d4ff;
+  --accent2:   #ff6b35;
+  --accent3:   #39ff6e;
+  --text:      #cdd9e8;
+  --dim:       #4a6080;
+  --glow:      rgba(0,212,255,0.15);
+  --glow2:     rgba(0,212,255,0.04);
+  --time-font: 'Share Tech Mono', monospace;
+  --ui-font:   'Exo 2', sans-serif;
+  --label-font:'Rajdhani', sans-serif;
+}
 
-  html, body {
-    width: 100%; height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Exo 2', sans-serif;
-    overflow: hidden;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-  }
+body.theme-minimal {
+  --bg:        #f5f4f0;
+  --panel:     #ffffff;
+  --border:    #e0ddd6;
+  --accent:    #1a1a1a;
+  --accent2:   #888880;
+  --accent3:   #1a1a1a;
+  --text:      #1a1a1a;
+  --dim:       #aaa89f;
+  --glow:      rgba(0,0,0,0.04);
+  --glow2:     rgba(0,0,0,0.02);
+  --time-font: 'DM Serif Display', serif;
+  --ui-font:   'DM Sans', sans-serif;
+  --label-font:'DM Sans', sans-serif;
+}
 
-  /* Subtle scanline overlay */
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.07) 2px,
-      rgba(0,0,0,0.07) 4px
-    );
-    pointer-events: none;
-    z-index: 100;
-  }
+body.theme-departures {
+  --bg:        #0d0d0d;
+  --panel:     #111111;
+  --border:    #222222;
+  --accent:    #f5c400;
+  --accent2:   #f5c400;
+  --accent3:   #f5c400;
+  --text:      #f0ead0;
+  --dim:       #5a5540;
+  --glow:      rgba(245,196,0,0.12);
+  --glow2:     rgba(245,196,0,0.04);
+  --time-font: 'Roboto Condensed', sans-serif;
+  --ui-font:   'Roboto Condensed', sans-serif;
+  --label-font:'Roboto Condensed', sans-serif;
+}
 
-  .layout {
-    display: grid;
-    grid-template-rows: 1fr auto auto;
-    height: 100vh;
-    padding: 16px;
-    gap: 12px;
-  }
+/* ═══════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── CLOCK ── */
-  .clock-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-  }
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 0.4s ease, color 0.4s ease;
+}
 
-  .clock-panel::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 50% 30%, var(--glow), transparent 70%);
-    pointer-events: none;
-  }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ui-font);
+}
 
-  .date-line {
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 300;
-    font-size: clamp(0.9rem, 2.5vw, 1.3rem);
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: var(--dim);
-    margin-bottom: 4px;
-  }
+body.theme-cyber::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
+  pointer-events: none;
+  z-index: 50;
+}
 
-  .time-display {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: clamp(4rem, 16vw, 10rem);
-    line-height: 1;
-    color: var(--accent);
-    text-shadow: 0 0 30px rgba(0,212,255,0.5), 0 0 60px rgba(0,212,255,0.2);
-    letter-spacing: -0.02em;
-    transition: text-shadow 0.3s;
-  }
+body.theme-departures::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(245,196,0,0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-  .time-display .colon {
-    animation: blink 1s step-end infinite;
-    display: inline-block;
-  }
+/* ═══════════════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════════════ */
+.layout {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  height: 100vh;
+  padding: 16px;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
 
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.2; }
-  }
+/* ═══════════════════════════════════════════════════════
+   CLOCK PANEL
+═══════════════════════════════════════════════════════ */
+.clock-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: background 0.4s, border-color 0.4s, border-radius 0.3s;
+}
 
-  .seconds-bar-wrap {
-    width: 60%;
-    max-width: 400px;
-    height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    margin-top: 12px;
-    overflow: hidden;
-  }
-  .seconds-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 2px;
-    transition: width 1s linear;
-    box-shadow: 0 0 8px rgba(0,212,255,0.6);
-  }
+body.theme-cyber .clock-panel::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 30%, var(--glow), transparent 70%);
+  pointer-events: none;
+}
 
-  /* Toggle 24h button */
-  .format-toggle {
-    position: absolute;
-    top: 12px;
-    right: 14px;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--dim);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.75rem;
-    letter-spacing: 0.15em;
-    padding: 5px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .format-toggle:active,
-  .format-toggle.active {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--glow2);
-    box-shadow: 0 0 10px var(--glow);
-  }
+body.theme-minimal .clock-panel {
+  background: transparent;
+  border-color: transparent;
+}
 
-  /* ── SENSOR + WEATHER ROW ── */
-  .bottom-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
+body.theme-departures .clock-panel {
+  border-radius: 4px;
+  border-color: #333;
+}
+body.theme-departures .clock-panel::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(245,196,0,0.5);
+}
 
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    position: relative;
-    overflow: hidden;
-  }
+/* ── Date line ── */
+.date-line {
+  font-family: var(--label-font);
+  font-weight: 300;
+  font-size: clamp(0.8rem, 2.2vw, 1.2rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 6px;
+  transition: color 0.4s, letter-spacing 0.3s;
+}
 
-  .panel::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    border-radius: 10px 10px 0 0;
-  }
-  .panel.sensor-panel::before { background: linear-gradient(90deg, var(--accent3), transparent); }
-  .panel.weather-panel::before { background: linear-gradient(90deg, var(--accent2), transparent); }
+body.theme-departures .date-line {
+  font-weight: 700;
+  font-size: clamp(0.65rem, 1.6vw, 0.9rem);
+  letter-spacing: 0.22em;
+}
 
-  .panel-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.65rem;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--dim);
-    margin-bottom: 10px;
-  }
+/* ── Time display ── */
+.time-display {
+  font-family: var(--time-font);
+  font-size: clamp(4.5rem, 17vw, 11rem);
+  line-height: 1;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+  transition: color 0.4s, text-shadow 0.4s;
+}
 
-  /* Sensor grid */
-  .sensor-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-  }
+body.theme-cyber .time-display {
+  text-shadow: 0 0 30px rgba(0,212,255,0.5), 0 0 60px rgba(0,212,255,0.2);
+}
 
-  .sensor-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
+body.theme-minimal .time-display {
+  color: var(--accent);
+  letter-spacing: -0.04em;
+  text-shadow: none;
+  font-size: clamp(5rem, 19vw, 13rem);
+}
 
-  .sensor-value {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: clamp(1.2rem, 3.5vw, 1.9rem);
-    line-height: 1;
-    color: var(--accent3);
-    text-shadow: 0 0 12px rgba(57,255,110,0.4);
-  }
+body.theme-departures .time-display {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  text-shadow: 0 0 20px rgba(245,196,0,0.4), 0 0 40px rgba(245,196,0,0.15);
+  font-size: clamp(5rem, 18vw, 12rem);
+}
 
-  .sensor-unit {
-    font-size: 0.6rem;
-    color: var(--dim);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
+.colon {
+  animation: blink 1s step-end infinite;
+  display: inline-block;
+}
 
-  .sensor-label {
-    font-size: 0.55rem;
-    color: var(--dim);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
+body.theme-minimal .colon {
+  animation: blink-soft 1s ease-in-out infinite;
+}
 
-  .sensor-error {
-    font-size: 0.7rem;
-    color: var(--accent2);
-    opacity: 0.7;
-  }
+@keyframes blink      { 0%,100%{opacity:1} 50%{opacity:0.1} }
+@keyframes blink-soft { 0%,100%{opacity:1} 50%{opacity:0.35} }
 
-  /* Light bar */
-  .light-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .light-label {
-    font-size: 0.6rem;
-    color: var(--dim);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-  .light-bar-track {
-    flex: 1;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .light-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ff6b35, #ffe135);
-    border-radius: 2px;
-    transition: width 0.8s ease;
-  }
-  .light-lux {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--accent2);
-    white-space: nowrap;
-    min-width: 54px;
-    text-align: right;
-  }
+/* ── Seconds bar ── */
+.seconds-bar-wrap {
+  width: 60%;
+  max-width: 400px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 14px;
+  overflow: hidden;
+}
 
-  /* ── WEATHER ── */
-  .weather-offline {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--dim);
-    font-size: 0.75rem;
-    text-align: center;
-    padding: 8px;
-    letter-spacing: 0.06em;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .offline-icon { font-size: 1.4rem; opacity: 0.4; }
+body.theme-departures .seconds-bar-wrap {
+  width: 55%;
+  height: 2px;
+  border-radius: 0;
+}
 
-  .weather-current {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-  .weather-icon { font-size: clamp(1.5rem, 4vw, 2.2rem); }
-  .weather-temp {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: clamp(1.4rem, 4vw, 2rem);
-    color: var(--accent2);
-    text-shadow: 0 0 12px rgba(255,107,53,0.4);
-  }
-  .weather-desc {
-    font-size: 0.7rem;
-    color: var(--dim);
-    letter-spacing: 0.06em;
-  }
-  .weather-wind {
-    font-size: 0.6rem;
-    color: var(--dim);
-    margin-top: 2px;
-  }
+body.theme-minimal .seconds-bar-wrap {
+  height: 1px;
+  width: 28%;
+  background: var(--border);
+}
 
-  .forecast-strip {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
-    border-top: 1px solid var(--border);
-    padding-top: 8px;
-  }
+.seconds-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 2px;
+  transition: width 1s linear;
+}
 
-  .forecast-day {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1px;
-  }
-  .fc-day-label {
-    font-size: 0.55rem;
-    color: var(--dim);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .fc-icon { font-size: 0.95rem; line-height: 1.3; }
-  .fc-temps {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.55rem;
-    color: var(--text);
-    text-align: center;
-  }
-  .fc-temps span { color: var(--dim); }
+body.theme-cyber .seconds-bar       { box-shadow: 0 0 8px rgba(0,212,255,0.6); }
+body.theme-departures .seconds-bar  { border-radius: 0; box-shadow: 0 0 6px rgba(245,196,0,0.5); }
+body.theme-minimal .seconds-bar     { background: var(--dim); border-radius: 0; }
 
-  /* ── STATUS BAR ── */
-  .status-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 4px;
-    height: 20px;
-  }
-  .status-item {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
-    color: var(--dim);
-    text-transform: uppercase;
-  }
-  .dot {
-    display: inline-block;
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: var(--dim);
-    margin-right: 5px;
-    vertical-align: middle;
-  }
-  .dot.green  { background: var(--accent3); box-shadow: 0 0 4px var(--accent3); }
-  .dot.orange { background: var(--accent2); box-shadow: 0 0 4px var(--accent2); }
-  .dot.blue   { background: var(--accent);  box-shadow: 0 0 4px var(--accent); }
+/* ── AM/PM ── */
+.ampm-badge {
+  font-family: var(--label-font);
+  font-size: clamp(0.75rem, 2vw, 1rem);
+  letter-spacing: 0.18em;
+  color: var(--dim);
+  margin-top: 6px;
+  min-height: 1.4em;
+}
 
-  /* ── FADE IN ── */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .clock-panel { animation: fadeIn 0.6s ease 0s both; }
-  .sensor-panel { animation: fadeIn 0.6s ease 0.1s both; }
-  .weather-panel { animation: fadeIn 0.6s ease 0.2s both; }
+body.theme-departures .ampm-badge { font-weight: 700; color: var(--accent); }
+
+/* ─────────────────────────────────────────────────────
+   DEPARTURES SCROLLING STRIP
+───────────────────────────────────────────────────── */
+.departures-strip { display: none; }
+
+body.theme-departures .departures-strip {
+  display: flex;
+  width: 100%;
+  margin-top: 10px;
+  border-top: 1px solid #2a2a2a;
+  padding-top: 8px;
+  overflow: hidden;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-weight: 700;
+  font-size: clamp(0.6rem, 1.4vw, 0.8rem);
+  letter-spacing: 0.08em;
+  max-width: 80%;
+}
+
+.dep-scroll {
+  display: flex;
+  white-space: nowrap;
+  animation: marquee 22s linear infinite;
+  color: var(--accent);
+  gap: 0;
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ─────────────────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────────────────── */
+.format-toggle {
+  position: absolute;
+  top: 12px; right: 52px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  font-family: var(--label-font);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.format-toggle.active,
+.format-toggle:active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--glow2);
+}
+
+body.theme-departures .format-toggle { border-radius: 2px; font-weight: 700; }
+body.theme-minimal    .format-toggle { border-radius: 20px; }
+
+.settings-btn {
+  position: absolute;
+  top: 12px; right: 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  font-size: 1rem;
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  line-height: 1;
+}
+.settings-btn.open,
+.settings-btn:active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--glow2);
+}
+body.theme-minimal    .settings-btn { border-radius: 50%; }
+body.theme-departures .settings-btn { border-radius: 2px; }
+
+/* ═══════════════════════════════════════════════════════
+   SETTINGS OVERLAY
+═══════════════════════════════════════════════════════ */
+.settings-overlay {
+  position: fixed; inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.settings-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.settings-box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 32px;
+  min-width: 340px;
+  max-width: 90vw;
+  transform: translateY(14px) scale(0.97);
+  transition: transform 0.28s cubic-bezier(.34,1.4,.64,1), background 0.4s, border-color 0.4s;
+}
+.settings-overlay.visible .settings-box {
+  transform: translateY(0) scale(1);
+}
+
+body.theme-departures .settings-box { border-radius: 4px; }
+body.theme-minimal    .settings-box { border-radius: 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.14); }
+
+.settings-title {
+  font-family: var(--label-font);
+  font-size: 0.62rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 22px;
+}
+
+/* ── Theme cards ── */
+.theme-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.theme-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 14px 8px 12px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  transition: all 0.2s;
+  background: transparent;
+}
+.theme-card:hover   { background: var(--glow2); border-color: var(--dim); }
+.theme-card.selected { border-color: var(--accent); }
+
+body.theme-departures .theme-card { border-radius: 3px; }
+body.theme-minimal    .theme-card { border-radius: 14px; }
+
+.theme-preview {
+  width: 70px; height: 44px;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.preview-cyber      { background: #0a0e14; }
+.preview-minimal    { background: #f5f4f0; }
+.preview-departures { background: #0d0d0d; border-color: #333; }
+
+.preview-cyber::after {
+  content: '12:34';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.9rem;
+  color: #00d4ff;
+  text-shadow: 0 0 8px rgba(0,212,255,0.8);
+}
+.preview-minimal::after {
+  content: '12:34';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Serif Display', serif;
+  font-size: 0.95rem;
+  color: #1a1a1a;
+}
+.preview-departures::after {
+  content: '12:34';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #f5c400;
+  text-shadow: 0 0 8px rgba(245,196,0,0.6);
+}
+
+.theme-card-label {
+  font-family: var(--label-font);
+  font-size: 0.63rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  transition: color 0.2s;
+}
+.theme-card.selected .theme-card-label { color: var(--accent); }
+
+.settings-divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 20px;
+}
+
+.settings-close {
+  width: 100%;
+  padding: 11px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--dim);
+  font-family: var(--label-font);
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.settings-close:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--glow2);
+}
+body.theme-departures .settings-close { border-radius: 2px; font-weight: 700; }
+body.theme-minimal    .settings-close { border-radius: 22px; }
+
+/* ═══════════════════════════════════════════════════════
+   BOTTOM PANELS
+═══════════════════════════════════════════════════════ */
+.bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.4s, border-color 0.4s, border-radius 0.3s;
+}
+
+body.theme-minimal .panel {
+  border-radius: 14px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+}
+
+body.theme-departures .panel { border-radius: 3px; }
+
+/* coloured top edge */
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+body.theme-cyber .sensor-panel::before  { background: linear-gradient(90deg, #39ff6e, transparent); }
+body.theme-cyber .weather-panel::before { background: linear-gradient(90deg, #ff6b35, transparent); }
+body.theme-minimal .panel::before       { display: none; }
+body.theme-departures .panel::before    { background: var(--accent); box-shadow: 0 0 8px rgba(245,196,0,0.3); }
+
+.panel-title {
+  font-family: var(--label-font);
+  font-size: 0.62rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 10px;
+}
+body.theme-departures .panel-title { font-weight: 700; }
+
+/* ── Sensor grid ── */
+.sensor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.sensor-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.sensor-value {
+  font-family: var(--time-font);
+  font-size: clamp(1.1rem, 3.2vw, 1.8rem);
+  line-height: 1;
+  color: var(--accent3);
+  transition: color 0.4s;
+}
+
+body.theme-cyber .sensor-value       { text-shadow: 0 0 12px rgba(57,255,110,0.4); }
+body.theme-departures .sensor-value  { font-weight: 700; text-shadow: 0 0 8px rgba(245,196,0,0.25); }
+body.theme-minimal .sensor-value     { font-family: 'DM Serif Display', serif; font-size: clamp(1.2rem, 3.5vw, 2rem); }
+
+.sensor-unit  { font-size: 0.58rem; color: var(--dim); letter-spacing: 0.1em; text-transform: uppercase; }
+.sensor-label { font-size: 0.52rem; color: var(--dim); letter-spacing: 0.08em; text-transform: uppercase; }
+.sensor-error { font-size: 0.7rem; color: var(--accent2); opacity: 0.7; }
+
+.light-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.light-label { font-size: 0.58rem; color: var(--dim); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+.light-bar-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+body.theme-departures .light-bar-track { border-radius: 0; height: 2px; }
+.light-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent2), #ffe135);
+  border-radius: 2px;
+  transition: width 0.8s ease;
+}
+body.theme-departures .light-bar-fill { border-radius: 0; background: linear-gradient(90deg, #f5c400, #ffe98a); }
+body.theme-minimal    .light-bar-fill { background: var(--dim); border-radius: 0; }
+.light-lux { font-family: var(--time-font); font-size: 0.62rem; color: var(--accent2); white-space: nowrap; min-width: 52px; text-align: right; }
+
+/* ── Weather ── */
+.weather-offline {
+  display: flex; align-items: center; justify-content: center;
+  height: 100%; color: var(--dim);
+  font-size: 0.72rem; text-align: center; padding: 8px;
+  letter-spacing: 0.05em; flex-direction: column; gap: 4px;
+}
+.offline-icon { font-size: 1.3rem; opacity: 0.4; }
+
+.weather-current { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.weather-icon { font-size: clamp(1.3rem, 3.5vw, 2rem); }
+.weather-temp {
+  font-family: var(--time-font);
+  font-size: clamp(1.3rem, 3.8vw, 1.9rem);
+  color: var(--accent2);
+  transition: color 0.4s;
+}
+body.theme-cyber .weather-temp       { text-shadow: 0 0 12px rgba(255,107,53,0.4); }
+body.theme-departures .weather-temp  { font-weight: 700; color: var(--accent); text-shadow: 0 0 8px rgba(245,196,0,0.3); }
+body.theme-minimal .weather-temp     { font-family: 'DM Serif Display', serif; color: var(--accent); }
+
+.weather-desc { font-size: 0.68rem; color: var(--dim); letter-spacing: 0.05em; }
+.weather-wind { font-size: 0.58rem; color: var(--dim); margin-top: 2px; }
+
+.forecast-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.forecast-day { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.fc-day-label { font-size: 0.52rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; }
+body.theme-departures .fc-day-label { font-weight: 700; color: var(--accent); font-size: 0.56rem; }
+.fc-icon { font-size: 0.9rem; line-height: 1.3; }
+.fc-temps { font-family: var(--time-font); font-size: 0.52rem; color: var(--text); text-align: center; }
+.fc-temps span { color: var(--dim); }
+
+/* ═══════════════════════════════════════════════════════
+   STATUS BAR
+═══════════════════════════════════════════════════════ */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+  height: 20px;
+}
+.status-item {
+  font-family: var(--label-font);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+body.theme-departures .status-item { font-weight: 700; }
+
+.dot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--dim);
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.dot.green  { background: #39ff6e; box-shadow: 0 0 4px #39ff6e; }
+.dot.orange { background: #ff6b35; box-shadow: 0 0 4px #ff6b35; }
+.dot.blue   { background: #00d4ff; box-shadow: 0 0 4px #00d4ff; }
+
+body.theme-departures .dot.green { background: #f5c400; box-shadow: 0 0 4px #f5c400; }
+body.theme-departures .dot.blue  { background: #f5c400; box-shadow: 0 0 4px #f5c400; }
+body.theme-minimal .dot.green    { background: #888; box-shadow: none; }
+body.theme-minimal .dot.blue     { background: #888; box-shadow: none; }
+
+/* ═══════════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.clock-panel   { animation: fadeUp 0.5s ease 0.0s both; }
+.sensor-panel  { animation: fadeUp 0.5s ease 0.1s both; }
+.weather-panel { animation: fadeUp 0.5s ease 0.2s both; }
 </style>
 </head>
-<body>
+<body class="theme-cyber">
 
+<!-- ═══════════════ SETTINGS OVERLAY ═══════════════ -->
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-box">
+    <div class="settings-title">Clock Style</div>
+    <div class="theme-cards">
+      <div class="theme-card" data-theme="cyber" onclick="selectTheme('cyber')">
+        <div class="theme-preview preview-cyber"></div>
+        <div class="theme-card-label">Cyber</div>
+      </div>
+      <div class="theme-card" data-theme="minimal" onclick="selectTheme('minimal')">
+        <div class="theme-preview preview-minimal"></div>
+        <div class="theme-card-label">Minimal</div>
+      </div>
+      <div class="theme-card" data-theme="departures" onclick="selectTheme('departures')">
+        <div class="theme-preview preview-departures"></div>
+        <div class="theme-card-label">Departures</div>
+      </div>
+    </div>
+    <div class="settings-divider"></div>
+    <button class="settings-close" onclick="closeSettings()">Close</button>
+  </div>
+</div>
+
+<!-- ═══════════════ MAIN LAYOUT ═══════════════ -->
 <div class="layout">
 
-  <!-- ── CLOCK ── -->
+  <!-- CLOCK -->
   <div class="clock-panel">
     <div class="date-line" id="dateLine">—</div>
     <div class="time-display" id="timeDisplay">
@@ -379,75 +703,117 @@
     <div class="seconds-bar-wrap">
       <div class="seconds-bar" id="secondsBar" style="width:0%"></div>
     </div>
+    <div class="ampm-badge" id="ampmBadge"></div>
+
+    <div class="departures-strip" id="depStrip">
+      <div class="dep-scroll" id="depScroll"><span>LOADING DATA…</span></div>
+    </div>
+
     <button class="format-toggle" id="fmtToggle" onclick="toggleFormat()">24H</button>
+    <button class="settings-btn" id="settingsBtn" onclick="openSettings()">⚙</button>
   </div>
 
-  <!-- ── BOTTOM ROW ── -->
+  <!-- BOTTOM ROW -->
   <div class="bottom-row">
-
-    <!-- Sensors -->
     <div class="panel sensor-panel">
       <div class="panel-title">Indoor Sensors</div>
-      <div id="sensorContent">
-        <div class="sensor-error">Waiting for sensors…</div>
-      </div>
+      <div id="sensorContent"><div class="sensor-error">Waiting for sensors…</div></div>
     </div>
-
-    <!-- Weather -->
     <div class="panel weather-panel">
-      <div class="panel-title">Weather Forecast</div>
+      <div class="panel-title">Weather · <span id="locationLabel">—</span></div>
       <div id="weatherContent">
-        <div class="weather-offline">
-          <span class="offline-icon">📡</span>
-          Fetching forecast…
-        </div>
+        <div class="weather-offline"><span class="offline-icon">📡</span>Fetching forecast…</div>
       </div>
     </div>
-
   </div>
 
-  <!-- ── STATUS BAR ── -->
+  <!-- STATUS BAR -->
   <div class="status-bar">
-    <span class="status-item" id="sensorStatus"><span class="dot" id="sensorDot"></span>Sensors</span>
-    <span class="status-item" id="centerStatus">PI CLOCK</span>
-    <span class="status-item" id="weatherStatus"><span class="dot" id="weatherDot"></span>Weather</span>
+    <span class="status-item"><span class="dot" id="sensorDot"></span>Sensors</span>
+    <span class="status-item">PI CLOCK</span>
+    <span class="status-item"><span class="dot" id="weatherDot"></span>Weather</span>
   </div>
 
 </div>
 
 <script>
-// ── State ──────────────────────────────────────────────────────────────────
-let use24h = localStorage.getItem('use24h') !== 'false'; // default true
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let use24h = localStorage.getItem('use24h') !== 'false';
+let theme  = localStorage.getItem('theme')  || 'cyber';
 
-// ── Clock ──────────────────────────────────────────────────────────────────
-const DAYS  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const SDAYS  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-function pad(n) { return String(n).padStart(2, '0'); }
+function pad(n) { return String(n).padStart(2,'0'); }
+
+// ═══════════════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════════════
+function applyTheme(t) {
+  document.body.className = 'theme-' + t;
+  theme = t;
+  localStorage.setItem('theme', t);
+  document.querySelectorAll('.theme-card').forEach(c =>
+    c.classList.toggle('selected', c.dataset.theme === t)
+  );
+  updateDepStrip();
+}
+
+function selectTheme(t) { applyTheme(t); }
+
+// ═══════════════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════════════
+function openSettings() {
+  document.getElementById('settingsOverlay').classList.add('visible');
+  document.getElementById('settingsBtn').classList.add('open');
+}
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('visible');
+  document.getElementById('settingsBtn').classList.remove('open');
+}
+document.getElementById('settingsOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('settingsOverlay')) closeSettings();
+});
+
+// ═══════════════════════════════════════════════════════
+//  CLOCK
+// ═══════════════════════════════════════════════════════
+let prevSec = -1;
 
 function updateClock() {
   const now = new Date();
-  let h = now.getHours();
-  const m = now.getMinutes();
-  const s = now.getSeconds();
+  const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
 
-  // Date
-  document.getElementById('dateLine').textContent =
-    `${DAYS[now.getDay()]}  ·  ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
-
-  // Time
-  let hDisplay = h;
-  if (!use24h) {
-    hDisplay = h % 12 || 12;
+  // Departures squish on every tick
+  if (theme === 'departures' && s !== prevSec) {
+    const td = document.getElementById('timeDisplay');
+    td.style.transition = 'transform 0.05s ease-in';
+    td.style.transform  = 'scaleY(0.93)';
+    setTimeout(() => { td.style.transition = 'transform 0.12s ease-out'; td.style.transform = 'scaleY(1)'; }, 55);
+    prevSec = s;
   }
+
+  const isDepart = theme === 'departures';
+  document.getElementById('dateLine').textContent = isDepart
+    ? `${DAYS[now.getDay()].toUpperCase()}   ${now.getDate()} ${MONTHS[now.getMonth()].slice(0,3).toUpperCase()} ${now.getFullYear()}`
+    : `${DAYS[now.getDay()]}  ·  ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+
+  const hDisplay = use24h ? h : (h % 12 || 12);
   document.getElementById('hh').textContent = pad(hDisplay);
   document.getElementById('mm').textContent = pad(m);
   document.getElementById('ss').textContent = pad(s);
 
-  // Seconds bar
+  document.getElementById('ampmBadge').textContent = !use24h ? (h >= 12 ? 'PM' : 'AM') : '';
   document.getElementById('secondsBar').style.width = `${(s / 59) * 100}%`;
 }
 
+// ═══════════════════════════════════════════════════════
+//  FORMAT TOGGLE
+// ═══════════════════════════════════════════════════════
 function toggleFormat() {
   use24h = !use24h;
   localStorage.setItem('use24h', use24h);
@@ -457,136 +823,161 @@ function toggleFormat() {
   updateClock();
 }
 
-// Set initial button state
-(function() {
+// ═══════════════════════════════════════════════════════
+//  DEPARTURES SCROLLING TICKER
+// ═══════════════════════════════════════════════════════
+let depWeatherCache = null;
+let depSensorCache  = null;
+
+function updateDepStrip() {
+  if (theme !== 'departures') return;
+  const parts = [];
+
+  if (depWeatherCache && depWeatherCache.current) {
+    const c = depWeatherCache.current;
+    parts.push(`${c.icon}  ${c.desc.toUpperCase()}  ·  ${c.temp}°C`);
+    parts.push(`WIND  ${c.windspeed} KM/H`);
+    if (depWeatherCache.forecast) {
+      depWeatherCache.forecast.slice(0,3).forEach(f => {
+        const d = new Date(f.date + 'T12:00:00');
+        parts.push(`${SDAYS[d.getDay()].toUpperCase()}  ${f.icon}  ${f.max}° / ${f.min}°`);
+      });
+    }
+  }
+  if (depSensorCache && depSensorCache.temperature !== null) {
+    parts.push(`INDOOR  ${depSensorCache.temperature}°C  ·  ${depSensorCache.humidity}% RH  ·  ${depSensorCache.pressure} HPA`);
+  }
+  if (!parts.length) parts.push('NO DATA AVAILABLE');
+
+  // Double for seamless loop
+  const sep    = '          ·          ';
+  const single = parts.join(sep);
+  const full   = single + sep + single + sep;
+  const scroll = document.getElementById('depScroll');
+  if (scroll) scroll.innerHTML = `<span>${full}</span>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  SENSOR POLLING
+// ═══════════════════════════════════════════════════════
+function updateSensors() {
+  fetch('/api/sensors').then(r => r.json()).then(d => {
+    depSensorCache = d;
+    updateDepStrip();
+
+    const dot = document.getElementById('sensorDot');
+    const el  = document.getElementById('sensorContent');
+
+    if (d.error && d.temperature === null) {
+      dot.className = 'dot orange';
+      el.innerHTML  = `<div class="sensor-error">${d.error}</div>`;
+      return;
+    }
+
+    dot.className = 'dot green';
+    const temp = d.temperature !== null ? d.temperature : '–';
+    const hum  = d.humidity    !== null ? d.humidity    : '–';
+    const pres = d.pressure    !== null ? d.pressure    : '–';
+
+    el.innerHTML = `
+      <div class="sensor-grid">
+        <div class="sensor-item">
+          <div class="sensor-value">${temp}</div>
+          <div class="sensor-unit">°C</div>
+          <div class="sensor-label">Temp</div>
+        </div>
+        <div class="sensor-item">
+          <div class="sensor-value">${hum}</div>
+          <div class="sensor-unit">%</div>
+          <div class="sensor-label">Humidity</div>
+        </div>
+        <div class="sensor-item">
+          <div class="sensor-value">${pres}</div>
+          <div class="sensor-unit">hPa</div>
+          <div class="sensor-label">Pressure</div>
+        </div>
+      </div>
+      ${d.light !== null ? `
+      <div class="light-row">
+        <div class="light-label">Light</div>
+        <div class="light-bar-track">
+          <div class="light-bar-fill" style="width:${Math.min(100,(d.light/1000)*100).toFixed(1)}%"></div>
+        </div>
+        <div class="light-lux">${d.light} lx</div>
+      </div>` : ''}
+    `;
+  }).catch(() => { document.getElementById('sensorDot').className = 'dot orange'; });
+}
+
+// ═══════════════════════════════════════════════════════
+//  WEATHER POLLING
+// ═══════════════════════════════════════════════════════
+function dayLabel(dateStr) {
+  const d   = new Date(dateStr + 'T12:00:00');
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return 'Today';
+  const tmrw = new Date(now); tmrw.setDate(now.getDate()+1);
+  if (d.toDateString() === tmrw.toDateString()) return 'Tmrw';
+  return SDAYS[d.getDay()];
+}
+
+function updateWeather() {
+  fetch('/api/weather').then(r => r.json()).then(d => {
+    depWeatherCache = d;
+    updateDepStrip();
+
+    const dot = document.getElementById('weatherDot');
+    const el  = document.getElementById('weatherContent');
+    const loc = document.getElementById('locationLabel');
+    if (d.location) loc.textContent = d.location;
+
+    if (d.error || !d.current) {
+      dot.className = 'dot orange';
+      el.innerHTML  = `<div class="weather-offline"><span class="offline-icon">📡</span>${d.error ? 'No internet · indoor data only' : 'Fetching…'}</div>`;
+      return;
+    }
+
+    dot.className = 'dot blue';
+    const c = d.current;
+    const fc = d.forecast.slice(0,5).map(f => `
+      <div class="forecast-day">
+        <div class="fc-day-label">${dayLabel(f.date)}</div>
+        <div class="fc-icon">${f.icon}</div>
+        <div class="fc-temps">${f.max}°<br><span>${f.min}°</span></div>
+      </div>`).join('');
+
+    const upd = d.last_updated
+      ? new Date(d.last_updated).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+      : '';
+
+    el.innerHTML = `
+      <div class="weather-current">
+        <div class="weather-icon">${c.icon}</div>
+        <div>
+          <div class="weather-temp">${c.temp}°C</div>
+          <div class="weather-desc">${c.desc}</div>
+          <div class="weather-wind">💨 ${c.windspeed} km/h</div>
+        </div>
+        ${upd ? `<div style="margin-left:auto;font-size:0.52rem;color:var(--dim);align-self:flex-start">↻ ${upd}</div>` : ''}
+      </div>
+      <div class="forecast-strip">${fc}</div>
+    `;
+  }).catch(() => { document.getElementById('weatherDot').className = 'dot orange'; });
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+applyTheme(theme);
+(function(){
   const btn = document.getElementById('fmtToggle');
   btn.textContent = use24h ? '24H' : '12H';
   btn.classList.toggle('active', !use24h);
 })();
 
-setInterval(updateClock, 1000);
-updateClock();
-
-
-// ── Sensor polling ─────────────────────────────────────────────────────────
-function updateSensors() {
-  fetch('/api/sensors')
-    .then(r => r.json())
-    .then(d => {
-      const dot = document.getElementById('sensorDot');
-      const el  = document.getElementById('sensorContent');
-
-      if (d.error && d.temperature === null) {
-        dot.className = 'dot orange';
-        el.innerHTML = `<div class="sensor-error">${d.error}</div>`;
-        return;
-      }
-
-      dot.className = 'dot green';
-
-      const tempVal = d.temperature !== null ? d.temperature : '–';
-      const humVal  = d.humidity    !== null ? d.humidity    : '–';
-      const presVal = d.pressure    !== null ? d.pressure    : '–';
-
-      el.innerHTML = `
-        <div class="sensor-grid">
-          <div class="sensor-item">
-            <div class="sensor-value">${tempVal}</div>
-            <div class="sensor-unit">°C</div>
-            <div class="sensor-label">Temp</div>
-          </div>
-          <div class="sensor-item">
-            <div class="sensor-value">${humVal}</div>
-            <div class="sensor-unit">%</div>
-            <div class="sensor-label">Humidity</div>
-          </div>
-          <div class="sensor-item">
-            <div class="sensor-value">${presVal}</div>
-            <div class="sensor-unit">hPa</div>
-            <div class="sensor-label">Pressure</div>
-          </div>
-        </div>
-        ${d.light !== null ? `
-        <div class="light-row">
-          <div class="light-label">Light</div>
-          <div class="light-bar-track">
-            <div class="light-bar-fill" style="width:${Math.min(100, (d.light / 1000) * 100).toFixed(1)}%"></div>
-          </div>
-          <div class="light-lux">${d.light} lx</div>
-        </div>` : ''}
-      `;
-    })
-    .catch(() => {
-      document.getElementById('sensorDot').className = 'dot orange';
-    });
-}
-
-setInterval(updateSensors, 5000);
-updateSensors();
-
-
-// ── Weather polling ────────────────────────────────────────────────────────
-const SHORT_DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-function dayLabel(dateStr) {
-  const d = new Date(dateStr + 'T12:00:00');
-  const today = new Date();
-  if (d.toDateString() === today.toDateString()) return 'Today';
-  const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
-  if (d.toDateString() === tomorrow.toDateString()) return 'Tmrw';
-  return SHORT_DAYS[d.getDay()];
-}
-
-function updateWeather() {
-  fetch('/api/weather')
-    .then(r => r.json())
-    .then(d => {
-      const dot = document.getElementById('weatherDot');
-      const el  = document.getElementById('weatherContent');
-
-      if (d.error || !d.current) {
-        dot.className = 'dot orange';
-        el.innerHTML = `
-          <div class="weather-offline">
-            <span class="offline-icon">📡</span>
-            ${d.error ? 'No internet connection.<br>Showing indoor data only.' : 'Fetching…'}
-          </div>`;
-        return;
-      }
-
-      dot.className = 'dot blue';
-      const c = d.current;
-      const fcHTML = d.forecast.slice(0,5).map(f => `
-        <div class="forecast-day">
-          <div class="fc-day-label">${dayLabel(f.date)}</div>
-          <div class="fc-icon">${f.icon}</div>
-          <div class="fc-temps">${f.max}°<br><span>${f.min}°</span></div>
-        </div>`).join('');
-
-      const updStr = d.last_updated
-        ? new Date(d.last_updated).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-        : '';
-
-      el.innerHTML = `
-        <div class="weather-current">
-          <div class="weather-icon">${c.icon}</div>
-          <div>
-            <div class="weather-temp">${c.temp}°C</div>
-            <div class="weather-desc">${c.desc}</div>
-            <div class="weather-wind">💨 ${c.windspeed} km/h · ${d.location}</div>
-          </div>
-          ${updStr ? `<div style="margin-left:auto;font-size:0.55rem;color:var(--dim);align-self:flex-start">↻ ${updStr}</div>` : ''}
-        </div>
-        <div class="forecast-strip">${fcHTML}</div>
-      `;
-    })
-    .catch(() => {
-      document.getElementById('weatherDot').className = 'dot orange';
-    });
-}
-
-setInterval(updateWeather, 30000);
-updateWeather();
+setInterval(updateClock,   1000);  updateClock();
+setInterval(updateSensors, 5000);  updateSensors();
+setInterval(updateWeather, 30000); updateWeather();
 </script>
 </body>
 </html>

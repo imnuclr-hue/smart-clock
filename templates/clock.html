@@ -100,7 +100,7 @@ body.theme-departures::before {
 ═══════════════════════════════════════════════════════ */
 .layout {
   display: grid;
-  grid-template-rows: 1fr auto auto;
+  grid-template-rows: auto 1fr auto auto;
   height: 100vh;
   padding: 16px;
   gap: 12px;
@@ -192,7 +192,7 @@ body.theme-departures .time-display {
   font-weight: 700;
   letter-spacing: 0.05em;
   color: var(--accent);
-  text-shadow: 0 0 20px rgba(245,196,0,0.4), 0 0 40px rgba(245,196,0,0.15);
+  text-shadow: none;
   font-size: clamp(5rem, 18vw, 12rem);
 }
 
@@ -203,6 +203,11 @@ body.theme-departures .time-display {
 
 body.theme-minimal .colon {
   animation: blink-soft 1s ease-in-out infinite;
+}
+
+body.theme-departures .colon {
+  animation: none;
+  opacity: 1;
 }
 
 @keyframes blink      { 0%,100%{opacity:1} 50%{opacity:0.1} }
@@ -510,7 +515,7 @@ body.theme-minimal .panel {
   box-shadow: 0 2px 14px rgba(0,0,0,0.06);
 }
 
-body.theme-departures .panel { border-radius: 3px; }
+body.theme-departures .panel { border-radius: 0; border-color: #2a2a2a; background: #0d0d0d; }
 
 /* coloured top edge */
 .panel::before {
@@ -523,7 +528,25 @@ body.theme-departures .panel { border-radius: 3px; }
 body.theme-cyber .sensor-panel::before  { background: linear-gradient(90deg, #39ff6e, transparent); }
 body.theme-cyber .weather-panel::before { background: linear-gradient(90deg, #ff6b35, transparent); }
 body.theme-minimal .panel::before       { display: none; }
-body.theme-departures .panel::before    { background: var(--accent); box-shadow: 0 0 8px rgba(245,196,0,0.3); }
+body.theme-departures .panel::before    { display: none; }
+
+/* Departures board: full-bleed row separators instead of cards */
+body.theme-departures .bottom-row {
+  gap: 0;
+  border-top: 2px solid var(--accent);
+  box-shadow: 0 -4px 20px rgba(245,196,0,0.08);
+}
+
+body.theme-departures .sensor-panel {
+  border-right: 2px solid var(--accent);
+  border-top: none; border-bottom: none; border-left: none;
+  padding: 14px 20px;
+}
+
+body.theme-departures .weather-panel {
+  border: none;
+  padding: 14px 20px;
+}
 
 .panel-title {
   font-family: var(--label-font);
@@ -533,13 +556,41 @@ body.theme-departures .panel::before    { background: var(--accent); box-shadow:
   color: var(--dim);
   margin-bottom: 10px;
 }
-body.theme-departures .panel-title { font-weight: 700; }
+body.theme-departures .panel-title {
+  font-weight: 700;
+  font-size: 0.58rem;
+  letter-spacing: 0.35em;
+  color: var(--accent);
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
 
 /* ── Sensor grid ── */
 .sensor-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
+}
+
+/* Departures: horizontal inline row */
+body.theme-departures .sensor-grid {
+  display: flex;
+  gap: 0;
+  align-items: baseline;
+}
+
+body.theme-departures .sensor-item {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 3px;
+  padding-right: 18px;
+}
+
+body.theme-departures .sensor-item + .sensor-item::before {
+  content: '·';
+  color: var(--dim);
+  margin-right: 18px;
+  font-size: 1rem;
 }
 
 .sensor-item {
@@ -558,11 +609,13 @@ body.theme-departures .panel-title { font-weight: 700; }
 }
 
 body.theme-cyber .sensor-value       { text-shadow: 0 0 12px rgba(57,255,110,0.4); }
-body.theme-departures .sensor-value  { font-weight: 700; text-shadow: 0 0 8px rgba(245,196,0,0.25); }
+body.theme-departures .sensor-value  { font-weight: 700; font-size: clamp(1.1rem, 2.8vw, 1.5rem); text-shadow: none; color: var(--accent); }
 body.theme-minimal .sensor-value     { font-family: 'DM Serif Display', serif; font-size: clamp(1.2rem, 3.5vw, 2rem); }
 
 .sensor-unit  { font-size: 0.58rem; color: var(--dim); letter-spacing: 0.1em; text-transform: uppercase; }
 .sensor-label { font-size: 0.52rem; color: var(--dim); letter-spacing: 0.08em; text-transform: uppercase; }
+body.theme-departures .sensor-unit  { font-size: 0.65rem; font-weight: 700; color: var(--accent); opacity: 0.55; }
+body.theme-departures .sensor-label { display: none; }
 .sensor-error { font-size: 0.7rem; color: var(--accent2); opacity: 0.7; }
 
 .light-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
@@ -588,7 +641,7 @@ body.theme-minimal    .light-bar-fill { background: var(--dim); border-radius: 0
 }
 .offline-icon { font-size: 1.3rem; opacity: 0.4; }
 
-.weather-current { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.weather-current { display: flex; align-items: center; gap: 10px; }
 .weather-icon { font-size: clamp(1.3rem, 3.5vw, 2rem); }
 .weather-temp {
   font-family: var(--time-font);
@@ -597,26 +650,39 @@ body.theme-minimal    .light-bar-fill { background: var(--dim); border-radius: 0
   transition: color 0.4s;
 }
 body.theme-cyber .weather-temp       { text-shadow: 0 0 12px rgba(255,107,53,0.4); }
-body.theme-departures .weather-temp  { font-weight: 700; color: var(--accent); text-shadow: 0 0 8px rgba(245,196,0,0.3); }
+body.theme-departures .weather-temp  { font-weight: 700; color: var(--accent); text-shadow: none; font-size: clamp(1.1rem, 2.8vw, 1.5rem); }
 body.theme-minimal .weather-temp     { font-family: 'DM Serif Display', serif; color: var(--accent); }
 
 .weather-desc { font-size: 0.68rem; color: var(--dim); letter-spacing: 0.05em; }
 .weather-wind { font-size: 0.58rem; color: var(--dim); margin-top: 2px; }
+body.theme-departures .weather-desc { font-weight: 700; color: var(--text); font-size: 0.75rem; letter-spacing: 0.1em; }
+body.theme-departures .weather-wind { font-weight: 700; color: var(--dim); font-size: 0.65rem; margin-top: 3px; }
 
-.forecast-strip {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 4px;
-  border-top: 1px solid var(--border);
-  padding-top: 8px;
+/* Today detail row (max/min/precip) */
+.weather-today-detail {
+  display: flex;
+  gap: 14px;
+  margin-top: 6px;
 }
-
-.forecast-day { display: flex; flex-direction: column; align-items: center; gap: 1px; }
-.fc-day-label { font-size: 0.52rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; }
-body.theme-departures .fc-day-label { font-weight: 700; color: var(--accent); font-size: 0.56rem; }
-.fc-icon { font-size: 0.9rem; line-height: 1.3; }
-.fc-temps { font-family: var(--time-font); font-size: 0.52rem; color: var(--text); text-align: center; }
-.fc-temps span { color: var(--dim); }
+.wtd-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.wtd-val {
+  font-family: var(--time-font);
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+  color: var(--text);
+}
+body.theme-departures .wtd-val { font-weight: 700; color: var(--accent); font-size: 0.95rem; }
+.wtd-label {
+  font-size: 0.5rem;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+body.theme-departures .wtd-label { font-weight: 700; font-size: 0.52rem; letter-spacing: 0.12em; }
 
 /* ═══════════════════════════════════════════════════════
    STATUS BAR
@@ -661,9 +727,214 @@ body.theme-minimal .dot.blue     { background: #888; box-shadow: none; }
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.clock-panel   { animation: fadeUp 0.5s ease 0.0s both; }
-.sensor-panel  { animation: fadeUp 0.5s ease 0.1s both; }
-.weather-panel { animation: fadeUp 0.5s ease 0.2s both; }
+.clock-panel      { animation: fadeUp 0.5s ease 0.0s both; }
+.sensor-panel     { animation: fadeUp 0.5s ease 0.1s both; }
+.weather-panel    { animation: fadeUp 0.5s ease 0.2s both; }
+.countdown-panel  { animation: fadeUp 0.5s ease 0.3s both; }
+
+/* ═══════════════════════════════════════════════════════
+   COUNTDOWN PANEL
+═══════════════════════════════════════════════════════ */
+.countdown-panel {
+  /* standalone row — no grid-column needed */
+}
+
+body.theme-departures .countdown-panel {
+  border-radius: 0;
+  border-color: #2a2a2a;
+  background: #0d0d0d;
+  border-bottom: 2px solid var(--accent);
+  box-shadow: 0 4px 20px rgba(245,196,0,0.06);
+}
+
+/* Mode tabs */
+.cd-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.cd-tab {
+  flex: 1;
+  padding: 5px 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--dim);
+  font-family: var(--label-font);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.cd-tab.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--glow2);
+}
+body.theme-departures .cd-tab { border-radius: 2px; font-weight: 700; }
+body.theme-minimal    .cd-tab { border-radius: 20px; }
+
+/* Input rows */
+.cd-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cd-field-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cd-field-label {
+  font-family: var(--label-font);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.cd-input {
+  width: 52px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  font-family: var(--time-font);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 4px 2px;
+  outline: none;
+  transition: border-color 0.2s;
+  -moz-appearance: textfield;
+}
+.cd-input::-webkit-outer-spin-button,
+.cd-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.cd-input:focus { border-color: var(--accent); }
+
+body.theme-departures .cd-input { border-radius: 2px; }
+body.theme-minimal    .cd-input { border-radius: 8px; background: var(--panel); }
+
+/* Time-of-day input */
+.cd-time-input {
+  width: 90px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  font-family: var(--time-font);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 4px 6px;
+  outline: none;
+  transition: border-color 0.2s;
+  color-scheme: dark;
+}
+.cd-time-input:focus { border-color: var(--accent); }
+body.theme-minimal .cd-time-input { color-scheme: light; background: var(--panel); border-radius: 8px; }
+body.theme-departures .cd-time-input { border-radius: 2px; }
+
+.cd-sep {
+  font-family: var(--time-font);
+  font-size: 1rem;
+  color: var(--dim);
+}
+
+/* Buttons */
+.cd-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.cd-btn {
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--dim);
+  font-family: var(--label-font);
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.cd-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--glow2); }
+.cd-btn.start { border-color: var(--accent3); color: var(--accent3); }
+.cd-btn.start:hover { background: var(--glow2); }
+.cd-btn.pause { border-color: var(--accent2); color: var(--accent2); }
+body.theme-departures .cd-btn { border-radius: 2px; font-weight: 700; }
+body.theme-minimal    .cd-btn { border-radius: 20px; }
+
+/* Display row */
+.cd-display-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.cd-readout {
+  font-family: var(--time-font);
+  font-size: clamp(1.4rem, 4.5vw, 2.4rem);
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  line-height: 1;
+  min-width: 160px;
+  transition: color 0.3s;
+}
+body.theme-cyber .cd-readout      { text-shadow: 0 0 16px rgba(0,212,255,0.45); }
+body.theme-departures .cd-readout { font-weight: 700; color: var(--accent); text-shadow: 0 0 12px rgba(245,196,0,0.35); }
+body.theme-minimal .cd-readout    { font-family: 'DM Serif Display', serif; color: var(--accent); font-size: clamp(1.6rem, 5vw, 2.8rem); }
+
+.cd-readout.cd-done {
+  color: var(--accent2);
+  animation: cd-pulse 0.8s ease-in-out infinite alternate;
+}
+body.theme-cyber .cd-readout.cd-done      { text-shadow: 0 0 20px rgba(255,107,53,0.7); }
+body.theme-departures .cd-readout.cd-done { color: var(--accent); text-shadow: 0 0 20px rgba(245,196,0,0.7); }
+
+@keyframes cd-pulse { from { opacity: 1; } to { opacity: 0.5; } }
+
+.cd-progress-wrap {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+body.theme-departures .cd-progress-wrap { border-radius: 0; height: 2px; }
+body.theme-minimal .cd-progress-wrap    { height: 1px; }
+
+.cd-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 2px;
+  transition: width 0.5s linear, background 0.3s;
+}
+body.theme-cyber .cd-progress-bar { box-shadow: 0 0 6px rgba(0,212,255,0.5); }
+body.theme-departures .cd-progress-bar { border-radius: 0; box-shadow: 0 0 5px rgba(245,196,0,0.4); }
+
+.cd-target-label {
+  font-family: var(--label-font);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+/* Idle hint */
+.cd-idle {
+  font-family: var(--label-font);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  margin-top: 6px;
+}
 </style>
 </head>
 <body class="theme-cyber">
@@ -694,6 +965,60 @@ body.theme-minimal .dot.blue     { background: #888; box-shadow: none; }
 <!-- ═══════════════ MAIN LAYOUT ═══════════════ -->
 <div class="layout">
 
+  <!-- COUNTDOWN PANEL (top) -->
+  <div class="panel countdown-panel">
+    <div class="panel-title">Countdown</div>
+
+    <!-- Mode tabs -->
+    <div class="cd-tabs">
+      <button class="cd-tab active" id="cdTabDuration" onclick="cdSetMode('duration')">Duration</button>
+      <button class="cd-tab"        id="cdTabTarget"   onclick="cdSetMode('target')">Count to Time</button>
+    </div>
+
+    <!-- Duration inputs -->
+    <div class="cd-inputs" id="cdDurationInputs">
+      <div class="cd-field-group">
+        <input class="cd-input" id="cdHours"   type="number" min="0" max="99"  placeholder="00" value="0">
+        <span class="cd-field-label">h</span>
+      </div>
+      <span class="cd-sep">:</span>
+      <div class="cd-field-group">
+        <input class="cd-input" id="cdMinutes" type="number" min="0" max="59"  placeholder="00" value="0">
+        <span class="cd-field-label">m</span>
+      </div>
+      <span class="cd-sep">:</span>
+      <div class="cd-field-group">
+        <input class="cd-input" id="cdSeconds" type="number" min="0" max="59"  placeholder="00" value="0">
+        <span class="cd-field-label">s</span>
+      </div>
+      <div class="cd-actions">
+        <button class="cd-btn start" id="cdStartBtn" onclick="cdStart()">Start</button>
+        <button class="cd-btn pause" id="cdPauseBtn" onclick="cdPause()" style="display:none">Pause</button>
+        <button class="cd-btn"       id="cdResetBtn" onclick="cdReset()"  style="display:none">Reset</button>
+      </div>
+    </div>
+
+    <!-- Target time inputs -->
+    <div class="cd-inputs" id="cdTargetInputs" style="display:none">
+      <span class="cd-field-label">Count to</span>
+      <input class="cd-time-input" id="cdTargetTime" type="time" value="00:00">
+      <div class="cd-actions">
+        <button class="cd-btn start" id="cdTargetStartBtn" onclick="cdStart()">Start</button>
+        <button class="cd-btn"       id="cdTargetResetBtn" onclick="cdReset()"  style="display:none">Reset</button>
+      </div>
+    </div>
+
+    <!-- Readout -->
+    <div class="cd-display-row" id="cdDisplayRow" style="display:none">
+      <div class="cd-readout" id="cdReadout">00:00:00</div>
+      <div class="cd-progress-wrap">
+        <div class="cd-progress-bar" id="cdProgressBar" style="width:100%"></div>
+      </div>
+      <div class="cd-target-label" id="cdTargetLabel"></div>
+    </div>
+    <div class="cd-idle" id="cdIdle">Set a time above and press Start</div>
+  </div>
+
   <!-- CLOCK -->
   <div class="clock-panel">
     <div class="date-line" id="dateLine">—</div>
@@ -716,16 +1041,18 @@ body.theme-minimal .dot.blue     { background: #888; box-shadow: none; }
   <!-- BOTTOM ROW -->
   <div class="bottom-row">
     <div class="panel sensor-panel">
-      <div class="panel-title">Indoor Sensors</div>
+      <div class="panel-title">Indoor</div>
       <div id="sensorContent"><div class="sensor-error">Waiting for sensors…</div></div>
     </div>
     <div class="panel weather-panel">
-      <div class="panel-title">Weather · <span id="locationLabel">—</span></div>
+      <div class="panel-title">Today · <span id="locationLabel">—</span></div>
       <div id="weatherContent">
         <div class="weather-offline"><span class="offline-icon">📡</span>Fetching forecast…</div>
       </div>
     </div>
   </div>
+
+
 
   <!-- STATUS BAR -->
   <div class="status-bar">
@@ -782,20 +1109,10 @@ document.getElementById('settingsOverlay').addEventListener('click', e => {
 // ═══════════════════════════════════════════════════════
 //  CLOCK
 // ═══════════════════════════════════════════════════════
-let prevSec = -1;
 
 function updateClock() {
   const now = new Date();
   const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
-
-  // Departures squish on every tick
-  if (theme === 'departures' && s !== prevSec) {
-    const td = document.getElementById('timeDisplay');
-    td.style.transition = 'transform 0.05s ease-in';
-    td.style.transform  = 'scaleY(0.93)';
-    setTimeout(() => { td.style.transition = 'transform 0.12s ease-out'; td.style.transform = 'scaleY(1)'; }, 55);
-    prevSec = s;
-  }
 
   const isDepart = theme === 'departures';
   document.getElementById('dateLine').textContent = isDepart
@@ -912,15 +1229,6 @@ function updateSensors() {
 // ═══════════════════════════════════════════════════════
 //  WEATHER POLLING
 // ═══════════════════════════════════════════════════════
-function dayLabel(dateStr) {
-  const d   = new Date(dateStr + 'T12:00:00');
-  const now = new Date();
-  if (d.toDateString() === now.toDateString()) return 'Today';
-  const tmrw = new Date(now); tmrw.setDate(now.getDate()+1);
-  if (d.toDateString() === tmrw.toDateString()) return 'Tmrw';
-  return SDAYS[d.getDay()];
-}
-
 function updateWeather() {
   fetch('/api/weather').then(r => r.json()).then(d => {
     depWeatherCache = d;
@@ -939,16 +1247,30 @@ function updateWeather() {
 
     dot.className = 'dot blue';
     const c = d.current;
-    const fc = d.forecast.slice(0,5).map(f => `
-      <div class="forecast-day">
-        <div class="fc-day-label">${dayLabel(f.date)}</div>
-        <div class="fc-icon">${f.icon}</div>
-        <div class="fc-temps">${f.max}°<br><span>${f.min}°</span></div>
-      </div>`).join('');
+
+    // Find today's forecast entry
+    const todayStr = new Date().toISOString().slice(0,10);
+    const today = d.forecast ? d.forecast.find(f => f.date === todayStr) : null;
 
     const upd = d.last_updated
       ? new Date(d.last_updated).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
       : '';
+
+    const todayDetail = today ? `
+      <div class="weather-today-detail">
+        <div class="wtd-item">
+          <div class="wtd-val">${today.max}°</div>
+          <div class="wtd-label">High</div>
+        </div>
+        <div class="wtd-item">
+          <div class="wtd-val">${today.min}°</div>
+          <div class="wtd-label">Low</div>
+        </div>
+        <div class="wtd-item">
+          <div class="wtd-val">${today.precip}<span style="font-size:0.7em">mm</span></div>
+          <div class="wtd-label">Rain</div>
+        </div>
+      </div>` : '';
 
     el.innerHTML = `
       <div class="weather-current">
@@ -960,14 +1282,197 @@ function updateWeather() {
         </div>
         ${upd ? `<div style="margin-left:auto;font-size:0.52rem;color:var(--dim);align-self:flex-start">↻ ${upd}</div>` : ''}
       </div>
-      <div class="forecast-strip">${fc}</div>
+      ${todayDetail}
     `;
   }).catch(() => { document.getElementById('weatherDot').className = 'dot orange'; });
 }
 
 // ═══════════════════════════════════════════════════════
-//  INIT
+//  COUNTDOWN
 // ═══════════════════════════════════════════════════════
+let cdMode       = 'duration'; // 'duration' | 'target'
+let cdState      = 'idle';     // 'idle' | 'running' | 'paused' | 'done'
+let cdEndTime    = null;       // ms timestamp when countdown reaches zero
+let cdTotalMs    = 0;          // original duration in ms (for progress bar)
+let cdPausedLeft = 0;          // ms remaining when paused
+let cdInterval   = null;
+
+function cdSetMode(m) {
+  cdMode = m;
+  cdReset();
+  document.getElementById('cdTabDuration').classList.toggle('active', m === 'duration');
+  document.getElementById('cdTabTarget').classList.toggle('active',   m === 'target');
+  document.getElementById('cdDurationInputs').style.display = m === 'duration' ? '' : 'none';
+  document.getElementById('cdTargetInputs').style.display   = m === 'target'   ? '' : 'none';
+}
+
+function cdGetDurationMs() {
+  const h = parseInt(document.getElementById('cdHours').value)   || 0;
+  const m = parseInt(document.getElementById('cdMinutes').value) || 0;
+  const s = parseInt(document.getElementById('cdSeconds').value) || 0;
+  return (h * 3600 + m * 60 + s) * 1000;
+}
+
+function cdGetTargetMs() {
+  const val = document.getElementById('cdTargetTime').value; // "HH:MM"
+  if (!val) return 0;
+  const [th, tm] = val.split(':').map(Number);
+  const now = new Date();
+  const target = new Date(now);
+  target.setHours(th, tm, 0, 0);
+  if (target <= now) target.setDate(target.getDate() + 1); // next occurrence
+  return target.getTime() - now.getTime();
+}
+
+function cdFormatMs(ms) {
+  if (ms < 0) ms = 0;
+  const totalSec = Math.ceil(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  return `${pad(m)}:${pad(s)}`;
+}
+
+function cdUpdateDisplay(remainingMs) {
+  const readout = document.getElementById('cdReadout');
+  const bar     = document.getElementById('cdProgressBar');
+
+  readout.textContent = cdFormatMs(remainingMs);
+
+  if (cdTotalMs > 0) {
+    const pct = Math.max(0, Math.min(100, (remainingMs / cdTotalMs) * 100));
+    bar.style.width = pct + '%';
+    // Turn bar red in last 10%
+    if (pct < 10) {
+      bar.style.background = 'linear-gradient(90deg, var(--accent2), #ff3a3a)';
+    } else {
+      bar.style.background = '';
+    }
+  }
+}
+
+function cdTick() {
+  const now  = Date.now();
+  const left = cdEndTime - now;
+  if (left <= 0) {
+    cdDone();
+    return;
+  }
+  cdUpdateDisplay(left);
+}
+
+function cdDone() {
+  clearInterval(cdInterval);
+  cdInterval = null;
+  cdState = 'done';
+  const readout = document.getElementById('cdReadout');
+  readout.textContent = '00:00';
+  readout.classList.add('cd-done');
+  document.getElementById('cdProgressBar').style.width = '0%';
+  document.getElementById('cdPauseBtn').style.display = 'none';
+  document.getElementById('cdTargetLabel').textContent = 'Done!';
+  document.getElementById('cdIdle').style.display = 'none';
+}
+
+function cdStart() {
+  if (cdState === 'done') cdReset();
+
+  let ms;
+  if (cdMode === 'duration') {
+    ms = cdState === 'paused' ? cdPausedLeft : cdGetDurationMs();
+  } else {
+    ms = cdGetTargetMs();
+  }
+
+  if (ms <= 0) return;
+
+  if (cdState !== 'paused') cdTotalMs = ms;
+
+  cdEndTime = Date.now() + ms;
+  cdState   = 'running';
+
+  // Show/hide controls
+  document.getElementById('cdDisplayRow').style.display = '';
+  document.getElementById('cdIdle').style.display = 'none';
+  document.getElementById('cdStartBtn').style.display       = 'none';
+  document.getElementById('cdTargetStartBtn').style.display = 'none';
+  document.getElementById('cdResetBtn').style.display       = 'none';
+  document.getElementById('cdTargetResetBtn').style.display = 'none';
+
+  if (cdMode === 'duration') {
+    document.getElementById('cdPauseBtn').style.display = '';
+    document.getElementById('cdResetBtn').style.display = '';
+  } else {
+    // Show target label
+    const val = document.getElementById('cdTargetTime').value;
+    document.getElementById('cdTargetLabel').textContent = `→ ${val}`;
+    document.getElementById('cdTargetResetBtn').style.display = '';
+  }
+
+  document.getElementById('cdReadout').classList.remove('cd-done');
+  cdUpdateDisplay(ms);
+
+  clearInterval(cdInterval);
+  cdInterval = setInterval(cdTick, 500);
+}
+
+function cdPause() {
+  if (cdState !== 'running') return;
+  clearInterval(cdInterval);
+  cdInterval   = null;
+  cdPausedLeft = cdEndTime - Date.now();
+  cdState      = 'paused';
+
+  const pauseBtn = document.getElementById('cdPauseBtn');
+  pauseBtn.textContent = 'Resume';
+  pauseBtn.classList.add('start');
+  pauseBtn.onclick = cdResume;
+}
+
+function cdResume() {
+  const pauseBtn = document.getElementById('cdPauseBtn');
+  pauseBtn.textContent = 'Pause';
+  pauseBtn.classList.remove('start');
+  pauseBtn.onclick = cdPause;
+  cdStart();
+}
+
+function cdReset() {
+  clearInterval(cdInterval);
+  cdInterval = null;
+  cdState    = 'idle';
+  cdEndTime  = null;
+  cdTotalMs  = 0;
+  cdPausedLeft = 0;
+
+  document.getElementById('cdDisplayRow').style.display = 'none';
+  document.getElementById('cdIdle').style.display = '';
+  document.getElementById('cdReadout').classList.remove('cd-done');
+  document.getElementById('cdProgressBar').style.width = '100%';
+  document.getElementById('cdProgressBar').style.background = '';
+  document.getElementById('cdTargetLabel').textContent = '';
+
+  // Restore buttons
+  const pauseBtn = document.getElementById('cdPauseBtn');
+  pauseBtn.style.display = 'none';
+  pauseBtn.textContent   = 'Pause';
+  pauseBtn.classList.remove('start');
+  pauseBtn.onclick = cdPause;
+
+  document.getElementById('cdStartBtn').style.display       = '';
+  document.getElementById('cdTargetStartBtn').style.display = '';
+  document.getElementById('cdResetBtn').style.display       = 'none';
+  document.getElementById('cdTargetResetBtn').style.display = 'none';
+}
+
+// Allow Enter key on inputs to start
+['cdHours','cdMinutes','cdSeconds','cdTargetTime'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') cdStart(); });
+});
+
+
 applyTheme(theme);
 (function(){
   const btn = document.getElementById('fmtToggle');
